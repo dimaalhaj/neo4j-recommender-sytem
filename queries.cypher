@@ -70,20 +70,24 @@ CALL gds.graph.project(
 )
 
 
-// STEP 10 FASTRP EMBEDDING
+// STEP 10 FASTRP EMBEDDING TO PROJECTION
 CALL gds.fastRP.mutate('pProduct',
   {
     embeddingDimension: 256,
-    randomSeed: 42,
-    mutateProperty: 'embedding',
-    iterationWeights: [0.8, 1, 1, 1]
+    mutateProperty: 'embedding'
   }
 )
 YIELD nodePropertiesWritten
 
 
-// STEP 11 WRITE EMBEDDINGS TO PRODUCTS
-CALL gds.graph.writeNodeProperties('pProduct', ["embedding"], ["Product"])
+// STEP 11 WRITE EMBEDDINGS TO NEO4J
+CALL gds.fastRP.write('pProduct',
+  {
+    embeddingDimension: 256,
+    writeProperty: 'embedding'
+  }
+)
+YIELD nodePropertiesWritten
 
 
 // STEP 12 CREATE GRAPH PROJECTION OF EMBEDDED PRODUCTS
