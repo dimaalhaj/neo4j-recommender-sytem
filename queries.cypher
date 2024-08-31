@@ -86,13 +86,9 @@ YIELD nodePropertiesWritten
 CALL gds.graph.writeNodeProperties('pProduct', ["embedding"], ["Product"])
 
 
-// STEP 12 TO RETURN ALL EMBEDDINGS
-MATCH(p:Product) RETURN p.productID, p.embedding LIMIT 10
-
-
-// STEP 13 CREATE GRAPH PROJECTION OF EMBEDDED PRODUCTS
+// STEP 12 CREATE GRAPH PROJECTION OF EMBEDDED PRODUCTS
 CALL gds.graph.project(
-    'cf-projection',
+    'graph-projection',
     {
         Product: {properties: 'embedding'}
     },
@@ -100,13 +96,9 @@ CALL gds.graph.project(
 )
 
 
-// STEP 14 KNN FOR PRODUCTS SIMILARITY
-CALL gds.knn.write('cf-projection', {
+// STEP 13 KNN FOR PRODUCTS SIMILARITY
+CALL gds.knn.write('graph-projection', {
     nodeProperties: ['embedding'],
-    randomSeed: 42,
-    concurrency: 1,
-    sampleRate: 1.0,
-    deltaThreshold: 0.0,
     writeRelationshipType: "NEIGHBOR",
     writeProperty: "score"
 })
@@ -114,12 +106,12 @@ YIELD nodesCompared, relationshipsWritten, similarityDistribution
 RETURN nodesCompared, relationshipsWritten, similarityDistribution.mean as meanSimilarity
 
 
-// STEP 15 FETCH SIMILAR PRODUCTS ALONG WITH SIMILARITY SCORE
+// STEP 14 FETCH SIMILAR PRODUCTS ALONG WITH SIMILARITY SCORE
 MATCH (p1:Product)-[r:NEIGHBOR]->(p2:Product)
 RETURN p1.productID as product1, p2.productID as product2, r.score as similarity
 ORDER BY similarity DESCENDING, product1, product2
 
 
-// STEP 16 RELATIONSHIP BETWEEN 2 PRODUCTS
+// STEP 15 RELATIONSHIP BETWEEN 2 PRODUCTS
 MATCH p=(p1:Product {productID: "0375848207"})--()--(p2:Product {productID: "B00O8UQTSA"}) RETURN p
 
